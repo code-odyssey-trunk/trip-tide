@@ -1,8 +1,8 @@
 import { trips } from "@/data/trips";
 import ItineraryBoard from "@/components/ItineraryBoard";
 
-export default function TripItineraryPage({ params }: { params: { tripId: string } }) {
-  const tripId = params.tripId;
+export default async function TripItineraryPage({ params }: { params: { tripId: string } }) {
+  const tripId = await params.tripId;
   const trip = trips.find(t => t.id === tripId);
   if (!trip) {
     return (
@@ -11,10 +11,14 @@ export default function TripItineraryPage({ params }: { params: { tripId: string
       </div>
     );
   }
-  // Pass the trip's days and title to ItineraryBoard
+  // Pass the trip's days, title, and image to ItineraryBoard
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <ItineraryBoard initialTitle={trip.title} initialDays={trip.days} />
+      <ItineraryBoard 
+        initialTitle={trip.title} 
+        initialDays={trip.days} 
+        headerImage={trip.image}
+      />
     </div>
   );
 } 

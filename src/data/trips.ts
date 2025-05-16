@@ -228,6 +228,6 @@ export const trips: Trip[] = [
         ],
       },
     ],
-    image: "/place/japan.jpg",
+    image: "/place/japan-1.jpg",
   },
 ]; 

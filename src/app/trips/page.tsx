@@ -1,48 +1,124 @@
-import Link from "next/link";
-import Image from "next/image";
-import { trips } from "@/data/trips";
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { trips } from '@/data/trips';
+import { v4 as uuidv4 } from 'uuid';
+import TripFormModal from '@/components/TripFormModal';
 
 export default function TripsPage() {
+  const [tripsList, setTripsList] = useState(trips);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTrip, setEditingTrip] = useState<typeof trips[0] | null>(null);
+
+  const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
+    if (editingTrip) {
+      // Update existing trip
+      setTripsList(prev => prev.map(trip => 
+        trip.id === editingTrip.id 
+          ? { ...trip, ...tripData }
+          : trip
+      ));
+    } else {
+      // Create new trip
+      const newTrip = {
+        ...tripData,
+        id: uuidv4(),
+        days: []
+      };
+      setTripsList(prev => [...prev, newTrip]);
+    }
+  };
+
+  const handleDeleteTrip = (tripId: string) => {
+    setTripsList(prev => prev.filter(trip => trip.id !== tripId));
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-8">
-      <h1 className="text-4xl font-bold mb-12 text-center text-gray-800">Your Trips</h1>
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-        {trips.map(trip => (
-          <Link
-            key={trip.id}
-            href={`/trips/${trip.id}`}
-            className="group relative bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1"
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">My Trips</h1>
+          <button
+            onClick={() => {
+              setEditingTrip(null);
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl group"
           >
-            <div className="relative h-48 w-full">
-              <Image
-                src={trip.image}
-                alt={trip.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                priority={trip.id === trips[0].id}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            </div>
-            <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2 text-gray-800 group-hover:text-orange-500 transition-colors">
-                {trip.title}
-              </h2>
-              <div className="flex items-center text-gray-600 mb-4">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>{trip.startDate} - {trip.endDate}</span>
+            <svg 
+              className="w-5 h-5 transform group-hover:scale-110 transition-transform" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create New Trip
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tripsList.map((trip) => (
+            <div key={trip.id} className="group relative">
+              <Link href={`/trips/${trip.id}`} className="block">
+                <div className="relative h-48 rounded-2xl overflow-hidden">
+                  <Image
+                    src={trip.image}
+                    alt={trip.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h2 className="text-xl font-bold text-white mb-1">{trip.title}</h2>
+                    <p className="text-white/90 text-sm">
+                      {trip.startDate} - {trip.endDate}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={() => {
+                    setEditingTrip(trip);
+                    setIsModalOpen(true);
+                  }}
+                  className="p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
+                >
+                  <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm('Are you sure you want to delete this trip?')) {
+                      handleDeleteTrip(trip.id);
+                    }
+                  }}
+                  className="p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
+                >
+                  <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500">View Details</span>
-                <span className="text-orange-500 group-hover:translate-x-1 transition-transform">
-                  →
-                </span>
-              </div>
             </div>
-          </Link>
-        ))}
+          ))}
+        </div>
       </div>
+
+      <TripFormModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingTrip(null);
+        }}
+        onSubmit={handleSubmitTrip}
+        onDelete={editingTrip ? () => handleDeleteTrip(editingTrip.id) : undefined}
+        initialData={editingTrip || undefined}
+      />
     </div>
   );
 } 
