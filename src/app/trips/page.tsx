@@ -6,11 +6,26 @@ import Image from 'next/image';
 import { trips } from '@/data/trips';
 import { v4 as uuidv4 } from 'uuid';
 import TripFormModal from '@/components/TripFormModal';
+import ConfirmationModal from '@/components/ConfirmationModal';
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+};
 
 export default function TripsPage() {
   const [tripsList, setTripsList] = useState(trips);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<typeof trips[0] | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    tripId: string;
+    tripTitle: string;
+  }>({
+    isOpen: false,
+    tripId: '',
+    tripTitle: ''
+  });
 
   const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
     if (editingTrip) {
@@ -73,9 +88,22 @@ export default function TripsPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
                     <h2 className="text-xl font-bold text-white mb-1">{trip.title}</h2>
-                    <p className="text-white/90 text-sm">
-                      {trip.startDate} - {trip.endDate}
-                    </p>
+                    <div className="flex justify-between items-center">
+                      <p className="text-white/90 text-sm">
+                        {formatDate(trip.startDate)} - {formatDate(trip.endDate)}
+                      </p>
+                      <div className="flex items-center text-white/90 text-sm">
+                        <span>View Itinerary</span>
+                        <svg 
+                          className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -93,9 +121,11 @@ export default function TripsPage() {
                 </button>
                 <button
                   onClick={() => {
-                    if (window.confirm('Are you sure you want to delete this trip?')) {
-                      handleDeleteTrip(trip.id);
-                    }
+                    setDeleteConfirmation({
+                      isOpen: true,
+                      tripId: trip.id,
+                      tripTitle: trip.title
+                    });
                   }}
                   className="p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
                 >
@@ -118,6 +148,14 @@ export default function TripsPage() {
         onSubmit={handleSubmitTrip}
         onDelete={editingTrip ? () => handleDeleteTrip(editingTrip.id) : undefined}
         initialData={editingTrip || undefined}
+      />
+
+      <ConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={() => handleDeleteTrip(deleteConfirmation.tripId)}
+        title="Delete Trip"
+        message={`Are you sure you want to delete "${deleteConfirmation.tripTitle}"? This action cannot be undone.`}
       />
     </div>
   );
