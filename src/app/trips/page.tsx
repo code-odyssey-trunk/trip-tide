@@ -26,14 +26,26 @@ export default function TripsPage() {
     tripId: '',
     tripTitle: ''
   });
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (trips.length === 0) {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    
+    // Only initialize with static trips on first load
+    const hasInitialized = localStorage.getItem('hasInitializedTrips');
+    if (!hasInitialized) {
       staticTrips.forEach((trip) => {
         addTrip(trip);
       });
+      localStorage.setItem('hasInitializedTrips', 'true');
     }
-  }, [trips.length, addTrip]);
+    setIsLoading(false);
+  }, [isHydrated, addTrip]);
 
   const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
     if (editingTrip) {
@@ -42,6 +54,14 @@ export default function TripsPage() {
       addTrip(tripData);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,9 +93,10 @@ export default function TripsPage() {
               <Link href={`/trips/${trip.id}`} className="block">
                 <div className="relative h-48 rounded-2xl overflow-hidden">
                   <Image
-                    src={trip.image  || '/place/default.jpg'}
+                    src={trip.image || '/place/default.jpg'}
                     alt={trip.title}
                     fill
+                    loading="lazy"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
@@ -143,7 +164,7 @@ export default function TripsPage() {
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+            className="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -152,8 +173,6 @@ export default function TripsPage() {
           </button>
         </div>
         }
-
-
       </div>
 
       <TripFormModal

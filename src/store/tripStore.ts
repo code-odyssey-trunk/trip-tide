@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Trip, trips as staticTrips } from '@/data/trips';
+import { Trip } from '@/data/trips';
 import { v4 as uuidv4 } from 'uuid';
 import { ItineraryItem } from '@/data/itineraryDays';
 
 interface TripState {
   trips: Trip[];
-  addTrip: (tripData: Omit<Trip, 'id' | 'days'>) => void;
+  addTrip: (tripData: Omit<Trip, 'id'> | Omit<Trip, 'id' | 'days'>) => void;
   updateTrip: (id: string, tripData: Omit<Trip, 'id' | 'days'>) => void;
   deleteTrip: (id: string) => void;
   addDay: (tripId: string, day: Trip['days'][0]) => void;
@@ -46,44 +46,13 @@ const generateDaysFromDateRange = (startDate: string, endDate: string): Trip['da
 export const useTripStore = create<TripState>()(
   persist(
     (set) => ({
-      trips: staticTrips.map(staticTrip => {
-        // Generate all days from date range
-        const allDays = generateDaysFromDateRange(staticTrip.startDate, staticTrip.endDate);
-        
-        // If trip has predefined days, merge them with the generated days
-        if (staticTrip.days.length > 0) {
-          const mergedDays = allDays.map(generatedDay => {
-            // Find if there's a matching predefined day
-            const predefinedDay = staticTrip.days.find(d => d.date === generatedDay.date);
-            if (predefinedDay) {
-              // Use the predefined day's data but keep the generated day's ID
-              return {
-                ...predefinedDay,
-                id: generatedDay.id
-              };
-            }
-            // If no predefined day exists, use the generated empty day
-            return generatedDay;
-          });
-          
-          return {
-            ...staticTrip,
-            days: mergedDays
-          };
-        }
-        
-        // For trips without predefined days, use the generated days
-        return {
-          ...staticTrip,
-          days: allDays
-        };
-      }),
+      trips: [],
       
       addTrip: (tripData) => set((state) => {
         const newTrip: Trip = {
           ...tripData,
           id: 'id' in tripData ? tripData.id as string : uuidv4(),
-          days: generateDaysFromDateRange(tripData.startDate, tripData.endDate)
+          days: 'days' in tripData ? tripData.days : generateDaysFromDateRange(tripData.startDate, tripData.endDate)
         };
         
         // If tripData has an id, check if it exists
@@ -310,7 +279,6 @@ export const useTripStore = create<TripState>()(
     {
       name: 'trip-storage',
       storage: createJSONStorage(() => localStorage),
-      skipHydration: true, // This is important for Next.js
     }
   )
 ); 
