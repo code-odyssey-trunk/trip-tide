@@ -71,7 +71,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
   }
 
   const handleBack = () => {
-    router.push('/trips');
+    router.push('/');
   };
 
   const handleSubmitItem = (formData: Omit<ItineraryItem, 'id'>, dayId: string) => {

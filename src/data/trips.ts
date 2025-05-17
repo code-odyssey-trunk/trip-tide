@@ -179,7 +179,7 @@ export const trips: Trip[] = [
     id: "japan-2025",
     title: "Japan Adventure",
     startDate: "2025-01-10",
-    endDate: "2025-01-12",
+    endDate: "2025-01-11",
     days: [
       {
         id: "japan-day-1",
