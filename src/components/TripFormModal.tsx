@@ -16,7 +16,6 @@ export default function TripFormModal({
   isOpen,
   onClose,
   onSubmit,
-  onDelete,
   initialData
 }: TripFormModalProps) {
   const [formData, setFormData] = useState({
@@ -26,6 +25,7 @@ export default function TripFormModal({
     image: ''
   });
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [showDateWarning, setShowDateWarning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,6 +53,13 @@ export default function TripFormModal({
     }
   }, [initialData, isOpen]);
 
+  const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+    if (initialData && (value !== initialData[field])) {
+      setShowDateWarning(true);
+    }
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -78,6 +85,11 @@ export default function TripFormModal({
     onClose();
   };
 
+  const handleClose = () => {
+    setShowDateWarning(false);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -88,7 +100,7 @@ export default function TripFormModal({
             {initialData ? 'Edit Trip' : 'Create New Trip'}
           </h2>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-500 hover:text-gray-700"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -122,7 +134,7 @@ export default function TripFormModal({
                 type="date"
                 id="startDate"
                 value={formData.startDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) => handleDateChange('startDate', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
                 required
               />
@@ -135,12 +147,30 @@ export default function TripFormModal({
                 type="date"
                 id="endDate"
                 value={formData.endDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) => handleDateChange('endDate', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
                 required
               />
             </div>
           </div>
+
+          {showDateWarning && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">Warning</h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>Changing the trip dates may result in loss of itinerary items for dates that are removed. Please make sure to review your itinerary after saving.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -176,26 +206,11 @@ export default function TripFormModal({
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
-                required={!initialData}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            {onDelete && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm('Are you sure you want to delete this trip?')) {
-                    onDelete();
-                    onClose();
-                  }
-                }}
-                className="px-4 py-2 text-red-600 hover:text-red-700 font-medium"
-              >
-                Delete
-              </button>
-            )}
+          <div className="flex justify-center gap-3 pt-4">
             <button
               type="submit"
               className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"

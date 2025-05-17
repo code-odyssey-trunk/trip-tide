@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { trips } from '@/data/trips';
-import { v4 as uuidv4 } from 'uuid';
+import { trips as staticTrips } from '@/data/trips';
 import TripFormModal from '@/components/TripFormModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { useTripStore } from '@/store/tripStore';
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
@@ -14,7 +14,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function TripsPage() {
-  const [tripsList, setTripsList] = useState(trips);
+  const { trips, addTrip, updateTrip, deleteTrip } = useTripStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<typeof trips[0] | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -27,27 +27,20 @@ export default function TripsPage() {
     tripTitle: ''
   });
 
+  useEffect(() => {
+    if (trips.length === 0) {
+      staticTrips.forEach(trip => {
+        addTrip(trip as any);
+      });
+    }
+  }, []);
+
   const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
     if (editingTrip) {
-      // Update existing trip
-      setTripsList(prev => prev.map(trip => 
-        trip.id === editingTrip.id 
-          ? { ...trip, ...tripData }
-          : trip
-      ));
+      updateTrip(editingTrip.id, tripData);
     } else {
-      // Create new trip
-      const newTrip = {
-        ...tripData,
-        id: uuidv4(),
-        days: []
-      };
-      setTripsList(prev => [...prev, newTrip]);
+      addTrip(tripData);
     }
-  };
-
-  const handleDeleteTrip = (tripId: string) => {
-    setTripsList(prev => prev.filter(trip => trip.id !== tripId));
   };
 
   return (
@@ -73,14 +66,14 @@ export default function TripsPage() {
             Create New Trip
           </button>
         </div>
-
+        {trips.length !== 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tripsList.map((trip) => (
+          {trips.map((trip) => (
             <div key={trip.id} className="group relative">
               <Link href={`/trips/${trip.id}`} className="block">
                 <div className="relative h-48 rounded-2xl overflow-hidden">
                   <Image
-                    src={trip.image}
+                    src={trip.image  || '/place/default.jpg'}
                     alt={trip.title}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
@@ -137,6 +130,30 @@ export default function TripsPage() {
             </div>
           ))}
         </div>
+        ) :
+        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+          <div className="w-24 h-24 mb-6 text-gray-400">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">No Trips Yet</h2>
+          <p className="text-gray-600 mb-6 max-w-md">
+            Start planning your next adventure by creating a new trip. Add destinations, dates, and build your perfect itinerary.
+          </p>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-orange-600 font-medium flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-200"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create Your First Trip
+          </button>
+        </div>
+        }
+
+
       </div>
 
       <TripFormModal
@@ -146,14 +163,14 @@ export default function TripsPage() {
           setEditingTrip(null);
         }}
         onSubmit={handleSubmitTrip}
-        onDelete={editingTrip ? () => handleDeleteTrip(editingTrip.id) : undefined}
+        onDelete={editingTrip ? () => deleteTrip(editingTrip.id) : undefined}
         initialData={editingTrip || undefined}
       />
 
       <ConfirmationModal
         isOpen={deleteConfirmation.isOpen}
         onClose={() => setDeleteConfirmation(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={() => handleDeleteTrip(deleteConfirmation.tripId)}
+        onConfirm={() => deleteTrip(deleteConfirmation.tripId)}
         title="Delete Trip"
         message={`Are you sure you want to delete "${deleteConfirmation.tripTitle}"? This action cannot be undone.`}
       />

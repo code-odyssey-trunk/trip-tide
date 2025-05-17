@@ -1,9 +1,19 @@
-import { trips } from "@/data/trips";
-import ItineraryBoard from "@/components/ItineraryBoard";
+'use client';
 
-export default async function TripItineraryPage({ params }: { params: { tripId: string } }) {
-  const tripId = await params.tripId;
-  const trip = trips.find(t => t.id === tripId);
+import { useEffect, useState } from 'react';
+import { useTripStore } from '@/store/tripStore';
+import ItineraryBoard from "@/components/ItineraryBoard";
+import { Trip } from '@/data/trips';
+
+export default function TripItineraryPage({ params }: { params: { tripId: string } }) {
+  const { trips } = useTripStore();
+  const [trip, setTrip] = useState<Trip | null>(null);
+
+  useEffect(() => {
+    const foundTrip = trips.find(t => t.id === params.tripId);
+    setTrip(foundTrip || null);
+  }, [trips, params.tripId]);
+
   if (!trip) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -11,14 +21,10 @@ export default async function TripItineraryPage({ params }: { params: { tripId: 
       </div>
     );
   }
-  // Pass the trip's days, title, and image to ItineraryBoard
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <ItineraryBoard 
-        initialTitle={trip.title} 
-        initialDays={trip.days} 
-        headerImage={trip.image}
-      />
+    <div className="min-h-screen bg-gray-50">
+      <ItineraryBoard tripId={params.tripId} />
     </div>
   );
 } 
