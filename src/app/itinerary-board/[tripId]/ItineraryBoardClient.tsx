@@ -3,7 +3,11 @@
 import { useRouter } from 'next/navigation';
 import ItineraryBoard from '@/components/ItineraryBoard';
 
-export default function ItineraryBoardPage() {
+type Props = {
+  tripId: string;
+}
+
+export default function ItineraryBoardClient({ tripId }: Props) {
   const router = useRouter();
 
   return (
@@ -16,7 +20,7 @@ export default function ItineraryBoardPage() {
           ← Back
         </button>
       </div>
-      <ItineraryBoard tripId="malaysia-2024" />
+      <ItineraryBoard tripId={tripId} />
     </div>
   );
 } 

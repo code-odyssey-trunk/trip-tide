@@ -25,7 +25,7 @@ const generateDaysFromDateRange = (startDate: string, endDate: string): Trip['da
   const end = new Date(endDate);
   const days: Trip['days'] = [];
   
-  let currentDate = new Date(start);
+  const currentDate = new Date(start);
   let dayIndex = 1;
   
   while (currentDate <= end) {
@@ -41,32 +41,6 @@ const generateDaysFromDateRange = (startDate: string, endDate: string): Trip['da
   }
   
   return days;
-};
-
-// Helper function to merge days from static data with existing days
-const mergeDays = (existingDays: Trip['days'], staticDays: Trip['days']) => {
-  const mergedDays = [...existingDays];
-  
-  staticDays.forEach(staticDay => {
-    const existingDayIndex = mergedDays.findIndex(d => d.id === staticDay.id);
-    if (existingDayIndex === -1) {
-      // If day doesn't exist, add it
-      mergedDays.push(staticDay);
-    } else {
-      // If day exists, merge items
-      const existingDay = mergedDays[existingDayIndex];
-      const existingItemIds = new Set(existingDay.items.map(item => item.id));
-      
-      // Add only new items from static day
-      const newItems = staticDay.items.filter(item => !existingItemIds.has(item.id));
-      mergedDays[existingDayIndex] = {
-        ...existingDay,
-        items: [...existingDay.items, ...newItems]
-      };
-    }
-  });
-  
-  return mergedDays;
 };
 
 export const useTripStore = create<TripState>()(

@@ -29,11 +29,11 @@ export default function TripsPage() {
 
   useEffect(() => {
     if (trips.length === 0) {
-      staticTrips.forEach(trip => {
-        addTrip(trip as any);
+      staticTrips.forEach((trip) => {
+        addTrip(trip);
       });
     }
-  }, []);
+  }, [trips.length, addTrip]);
 
   const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
     if (editingTrip) {

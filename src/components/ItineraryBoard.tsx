@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import ItineraryFormModal from './ItineraryFormModal';
 import { ItineraryItem, ItineraryDay } from '@/data/itineraryDays';
 import { Icon } from '@iconify/react';
+import Image from 'next/image';
 
 interface ItineraryBoardProps {
   tripId: string;
@@ -62,7 +63,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
       return generateDaysFromDateRange(trip.startDate, trip.endDate);
     }
     return trip.days;
-  }, [trip?.days, trip?.startDate, trip?.endDate]);
+  }, [trip]);
 
   if (!trip) {
     router.push('/trips');
@@ -136,10 +137,11 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
       <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
         <div className="max-w-7xl mx-auto">
           <div className="relative h-[256px] rounded-2xl overflow-hidden">
-            <img
+            <Image
               src={trip.image || '/place/default.jpg'}
               alt={trip.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/0" />
             

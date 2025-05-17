@@ -5,22 +5,19 @@ import { useRouter } from 'next/navigation';
 import TripFormModal from '@/components/TripFormModal';
 import { useTripStore } from '@/store/tripStore';
 import Image from 'next/image';
+import { Trip } from '@/data/trips';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
-  const { trips, addTrip, updateTrip, deleteTrip } = useTripStore();
+  const { trips, addTrip, updateTrip } = useTripStore();
 
-  const handleSubmit = (tripData: any) => {
+  const handleSubmit = (tripData: Omit<Trip, 'days' | 'id'> & { id?: string }) => {
     if (tripData.id) {
       updateTrip(tripData.id, tripData);
     } else {
       addTrip(tripData);
     }
-  };
-
-  const handleDelete = (id: string) => {
-    deleteTrip(id);
   };
 
   return (
