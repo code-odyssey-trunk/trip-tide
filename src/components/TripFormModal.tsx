@@ -26,6 +26,7 @@ export default function TripFormModal({
   });
   const [imagePreview, setImagePreview] = useState<string>('');
   const [showDateWarning, setShowDateWarning] = useState(false);
+  const [dateError, setDateError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -51,13 +52,59 @@ export default function TripFormModal({
       });
       setImagePreview('');
     }
+    setDateError(null);
   }, [initialData, isOpen]);
 
+  const validateDates = (startDate: string, endDate: string): boolean => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    const start = new Date(startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    end.setHours(0, 0, 0, 0);
+
+    if (start < today) {
+      setDateError("Please select today or a future date");
+      return false;
+    }
+
+    if (end < start) {
+      setDateError("End date must be after start date");
+      return false;
+    }
+
+    setDateError(null);
+    return true;
+  };
+
   const handleDateChange = (field: 'startDate' | 'endDate', value: string) => {
+    const newFormData = { ...formData, [field]: value };
+    
     if (initialData && (value !== initialData[field])) {
       setShowDateWarning(true);
     }
-    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // If start date is changed and is later than end date, adjust end date
+    if (field === 'startDate') {
+      const start = new Date(value);
+      const end = new Date(formData.endDate);
+      
+      if (start > end) {
+        // Set end date to next day after start date
+        const nextDay = new Date(start);
+        nextDay.setDate(nextDay.getDate() + 1);
+        newFormData.endDate = nextDay.toISOString().split('T')[0];
+      }
+    }
+
+    // Validate dates when either field changes
+    validateDates(
+      field === 'startDate' ? value : formData.startDate,
+      field === 'endDate' ? value : newFormData.endDate
+    );
+
+    setFormData(newFormData);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,12 +128,18 @@ export default function TripFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateDates(formData.startDate, formData.endDate)) {
+      return;
+    }
+
     onSubmit(formData);
     onClose();
   };
 
   const handleClose = () => {
     setShowDateWarning(false);
+    setDateError(null);
     onClose();
   };
 
@@ -135,6 +188,7 @@ export default function TripFormModal({
                 id="startDate"
                 value={formData.startDate}
                 onChange={(e) => handleDateChange('startDate', e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
                 required
               />
@@ -148,11 +202,27 @@ export default function TripFormModal({
                 id="endDate"
                 value={formData.endDate}
                 onChange={(e) => handleDateChange('endDate', e.target.value)}
+                min={formData.startDate}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
                 required
               />
             </div>
           </div>
+
+          {dateError && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 text-sm text-red-700">
+                  <p>{dateError}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {showDateWarning && (
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">

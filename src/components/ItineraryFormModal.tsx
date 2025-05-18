@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react';
 import { ItineraryItem, ItineraryDay } from '@/data/itineraryDays';
 
-type ItineraryFormModalProps = {
+interface ItineraryFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (formData: Omit<ItineraryItem, 'id'>, dayId: string) => void;
+  onSubmit: (itemData: Omit<ItineraryItem, 'id'>) => void;
   days: ItineraryDay[];
   initialData?: ItineraryItem;
   dayId: string;
-};
+  isDayLocked?: boolean;
+}
 
 // Helper function to format date for display
 const formatDateForDisplay = (dateString: string) => {
@@ -40,15 +41,16 @@ export default function ItineraryFormModal({
   onSubmit,
   days,
   initialData,
-  dayId
+  dayId,
+  isDayLocked = false
 }: ItineraryFormModalProps) {
   const [formData, setFormData] = useState({
-    title: '',
-    type: 'Activity',
-    details: '',
+    title: initialData?.title || '',
+    type: initialData?.type || 'Activity',
+    details: initialData?.details || '',
     dayId: dayId,
-    iconName: 'mdi:map-marker',
-    iconColor: 'text-green-500'
+    iconName: initialData?.iconName || 'mdi:map-marker',
+    iconColor: initialData?.iconColor || 'text-green-500'
   });
 
   useEffect(() => {
@@ -86,8 +88,8 @@ export default function ItineraryFormModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { dayId, ...itemData } = formData;
-    onSubmit(itemData, dayId);
+    const { dayId, ...itemData } = formData; // eslint-disable-line @typescript-eslint/no-unused-vars
+    onSubmit(itemData);
     resetForm();
     onClose();
   };
@@ -133,7 +135,7 @@ export default function ItineraryFormModal({
               placeholder="Enter title"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
               required
             />
           </div>
@@ -153,7 +155,6 @@ export default function ItineraryFormModal({
               <option value="Restaurant">Restaurant</option>
               <option value="Hotel">Hotel</option>
               <option value="Transportation">Transportation</option>
-              <option value="Other">Other</option>
             </select>
           </div>
 
@@ -165,7 +166,8 @@ export default function ItineraryFormModal({
               id="day"
               value={formData.dayId}
               onChange={(e) => setFormData(prev => ({ ...prev, dayId: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900"
+              disabled={isDayLocked}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
             >
               {days.map((day) => (
@@ -182,17 +184,23 @@ export default function ItineraryFormModal({
             </label>
             <textarea
               id="details"
-              placeholder="Enter details"
               value={formData.details}
               onChange={(e) => setFormData(prev => ({ ...prev, details: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 min-h-[100px]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 min-h-[100px]"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 hover:text-gray-900"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
             >
               {initialData ? 'Save Changes' : 'Add Item'}
             </button>
