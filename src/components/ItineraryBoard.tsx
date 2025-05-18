@@ -9,35 +9,11 @@ import { ItineraryItem, ItineraryDay } from '@/data/itineraryDays';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { formatDate, getTripStatus } from '@/utils/dateUtils';
+import { formatDate, getTripStatus, generateDaysFromDateRange } from '@/utils/dateUtils';
 
 interface ItineraryBoardProps {
   tripId: string;
 }
-
-// Helper function to generate days from date range
-const generateDaysFromDateRange = (startDate: string, endDate: string): ItineraryDay[] => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const days: ItineraryDay[] = [];
-  
-  const currentDate = new Date(start);
-  let dayIndex = 1;
-  
-  while (currentDate <= end) {
-    days.push({
-      id: `day-${dayIndex}`,
-      day: `Day ${dayIndex}`,
-      date: currentDate.toISOString().split('T')[0],
-      items: []
-    });
-    
-    currentDate.setDate(currentDate.getDate() + 1);
-    dayIndex++;
-  }
-  
-  return days;
-};
 
 export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
   const router = useRouter();
@@ -101,8 +77,8 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
     if (!destination) return;
 
     if (type === 'item') {
-      const sourceDay = days.find(day => day.id === source.droppableId);
-      const destDay = days.find(day => day.id === destination.droppableId);
+      const sourceDay = days.find((day: ItineraryDay) => day.id === source.droppableId);
+      const destDay = days.find((day: ItineraryDay) => day.id === destination.droppableId);
       
       if (!sourceDay || !destDay) return;
 
@@ -157,7 +133,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
       toast.error("Cannot modify past trips");
       return;
     }
-    const day = days.find(d => d.id === dayId);
+    const day = days.find((d: ItineraryDay) => d.id === dayId);
     if (day) {
       setSelectedDay(day);
       setIsDayLocked(true);
@@ -170,7 +146,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
       toast.error("Cannot modify past trips");
       return;
     }
-    setSelectedDay(days.find(day => day.id === dayId) || null);
+    setSelectedDay(days.find((day: ItineraryDay) => day.id === dayId) || null);
     setEditingItem({ dayId, item });
     setIsModalOpen(true);
   };
@@ -302,7 +278,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
 
         <DragDropContext onDragEnd={handleDragEnd}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {days.map((day, dayIndex) => (
+            {days.map((day: ItineraryDay, dayIndex: number) => (
               <div
                 key={day.id}
                 className="bg-white rounded-lg shadow-lg border border-gray-200 p-4"
@@ -341,7 +317,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
                           </p>
                         </div>
                       ) : (
-                        day.items.map((item, index) => (
+                        day.items.map((item: ItineraryItem, index: number) => (
                           <Draggable
                             key={item.id}
                             draggableId={item.id}

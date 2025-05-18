@@ -68,3 +68,26 @@ export const generateDaysFromDateRange = (startDate: string, endDate: string): T
   
   return days;
 };
+
+// const generateDaysFromDateRange = (startDate: string, endDate: string): ItineraryDay[] => {
+//   const start = new Date(startDate);
+//   const end = new Date(endDate);
+//   const days: ItineraryDay[] = [];
+  
+//   const currentDate = new Date(start);
+//   let dayIndex = 1;
+  
+//   while (currentDate <= end) {
+//     days.push({
+//       id: `day-${dayIndex}`,
+//       day: `Day ${dayIndex}`,
+//       date: currentDate.toISOString().split('T')[0],
+//       items: []
+//     });
+    
+//     currentDate.setDate(currentDate.getDate() + 1);
+//     dayIndex++;
+//   }
+  
+//   return days;
+// };
