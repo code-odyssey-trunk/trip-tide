@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { Trip } from '@/data/trips';
 import { v4 as uuidv4 } from 'uuid';
 import { ItineraryItem } from '@/data/itineraryDays';
+import { generateDaysFromDateRange } from '@/utils/dateUtils';
 
 interface TripState {
   trips: Trip[];
@@ -18,30 +19,6 @@ interface TripState {
   reorderItems: (tripId: string, dayId: string, itemId: string, newIndex: number) => void;
   moveItemBetweenDays: (tripId: string, sourceDayId: string, destDayId: string, itemId: string, newIndex: number) => void;
 }
-
-// Helper function to generate days from date range
-const generateDaysFromDateRange = (startDate: string, endDate: string): Trip['days'] => {
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  const days: Trip['days'] = [];
-  
-  const currentDate = new Date(start);
-  let dayIndex = 1;
-  
-  while (currentDate <= end) {
-    days.push({
-      id: `day-${dayIndex}`,
-      day: `Day ${dayIndex}`,
-      date: currentDate.toISOString().split('T')[0],
-      items: []
-    });
-    
-    currentDate.setDate(currentDate.getDate() + 1);
-    dayIndex++;
-  }
-  
-  return days;
-};
 
 export const useTripStore = create<TripState>()(
   persist(

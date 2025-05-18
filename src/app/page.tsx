@@ -8,26 +8,7 @@ import TripFormModal from '@/components/TripFormModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useTripStore } from '@/store/tripStore';
 import { AnimatedCounter } from '../components/AnimatedCounter';
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-};
-
-// Helper function to get trip status
-const getTripStatus = (startDate: string, endDate: string) => {
-  const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (now > end) {
-    return 'past';
-  } else if (now >= start && now <= end) {
-    return 'ongoing';
-  } else {
-    return 'upcoming';
-  }
-};
+import { formatDate, getTripState } from '@/utils/dateUtils';
 
 export default function Home() {
   const { trips, addTrip, updateTrip, deleteTrip } = useTripStore();
@@ -188,7 +169,7 @@ export default function Home() {
           <>
             {/* Ongoing & Upcoming Trips */}
             {trips.filter(trip => {
-              const status = getTripStatus(trip.startDate, trip.endDate);
+              const status = getTripState(trip.startDate, trip.endDate);
               return status === 'ongoing' || status === 'upcoming';
             }).length > 0 && (
               <div className="mb-12">
@@ -196,7 +177,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {trips
                     .filter(trip => {
-                      const status = getTripStatus(trip.startDate, trip.endDate);
+                      const status = getTripState(trip.startDate, trip.endDate);
                       return status === 'ongoing' || status === 'upcoming';
                     })
                     .map((trip) => (
@@ -266,12 +247,12 @@ export default function Home() {
             )}
 
             {/* Past Trips */}
-            {trips.filter(trip => getTripStatus(trip.startDate, trip.endDate) === 'past').length > 0 && (
+            {trips.filter(trip => getTripState(trip.startDate, trip.endDate) === 'past').length > 0 && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Past Trips</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {trips
-                    .filter(trip => getTripStatus(trip.startDate, trip.endDate) === 'past')
+                    .filter(trip => getTripState(trip.startDate, trip.endDate) === 'past')
                     .map((trip) => (
                       <div key={trip.id} className="group relative">
                         <Link href={`/trips/${trip.id}`} className="block">
