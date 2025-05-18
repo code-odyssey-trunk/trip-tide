@@ -9,7 +9,7 @@ import { ItineraryItem, ItineraryDay } from '@/data/itineraryDays';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
-import { formatDateForDisplay, getTripStatus } from '@/utils/dateUtils';
+import { formatDate, getTripStatus } from '@/utils/dateUtils';
 
 interface ItineraryBoardProps {
   tripId: string;
@@ -217,6 +217,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
                   src={trip.image || '/place/default.jpg'}
                   alt={trip.title}
                   fill
+                  sizes="64px"
                   className="object-cover"
                   priority
                 />
@@ -224,9 +225,9 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{trip.title}</h1>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span>{formatDateForDisplay(trip.startDate)}</span>
+                  <span>{formatDate(trip.startDate)}</span>
                   <span>-</span>
-                  <span>{formatDateForDisplay(trip.endDate)}</span>
+                  <span>{formatDate(trip.endDate)}</span>
                 </div>
               </div>
             </div>
@@ -264,9 +265,9 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
               </h3>
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-gray-500">{formatDateForDisplay(trip.startDate)}</span>
+              <span className="text-gray-500">{formatDate(trip.startDate)}</span>
               <span>-</span>
-              <span className="text-gray-500">{formatDateForDisplay(trip.endDate)}</span>
+              <span className="text-gray-500">{formatDate(trip.endDate)}</span>
             </div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -312,7 +313,7 @@ export default function ItineraryBoard({ tripId }: ItineraryBoardProps) {
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <span>Day {dayIndex + 1}</span>
                     <span className="px-2 py-1 text-sm font-medium bg-orange-100 text-orange-600 rounded-full">
-                      {formatDateForDisplay(day.date)}
+                      {formatDate(day.date)}
                     </span>
                   </h3>
                   {!isPastTrip && (

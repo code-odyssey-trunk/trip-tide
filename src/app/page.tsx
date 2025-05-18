@@ -184,10 +184,11 @@ export default function Home() {
                       <div key={trip.id} className="group relative">
                         <Link href={`/trips/${trip.id}`} className="block">
                           <div className="relative h-48 rounded-2xl overflow-hidden">
-          <Image
+                            <Image
                               src={trip.image || '/place/default.jpg'}
                               alt={trip.title}
                               fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               loading="lazy"
                               className="object-cover transition-transform duration-300 group-hover:scale-105"
                             />
@@ -257,10 +258,11 @@ export default function Home() {
                       <div key={trip.id} className="group relative">
                         <Link href={`/trips/${trip.id}`} className="block">
                           <div className="relative h-48 rounded-2xl overflow-hidden">
-          <Image
+                            <Image
                               src={trip.image || '/place/default.jpg'}
                               alt={trip.title}
                               fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                               loading="lazy"
                               className="object-cover transition-transform duration-300 group-hover:scale-105"
                             />
