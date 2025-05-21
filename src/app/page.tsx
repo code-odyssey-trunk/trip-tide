@@ -9,6 +9,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import { useTripStore } from '@/store/tripStore';
 import { AnimatedCounter } from '../components/AnimatedCounter';
 import { formatDate, getTripState } from '@/utils/dateUtils';
+import { logout } from './login/action';
 
 export default function Home() {
   const { trips, addTrip, updateTrip, deleteTrip } = useTripStore();
@@ -79,6 +80,7 @@ export default function Home() {
                   <p className="text-xs text-gray-500">john@example.com</p>
                 </div>
               </div>
+              <button onClick={logout}>Logout</button>
             </div>
           </div>
         </div>
