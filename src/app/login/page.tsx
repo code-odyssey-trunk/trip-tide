@@ -81,11 +81,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left side - Image/Illustration */}
-      <div className="hidden lg:flex lg:w-1/2 bg-orange-500 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-orange-400 opacity-90" />
-        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
-          <h1 className="text-4xl font-bold mb-6">Welcome to TripTide</h1>
-          <p className="text-xl mb-8">Your journey to perfect travel planning starts here.</p>
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/resource/login.jpg')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-600 to-orange-400 opacity-80" />
+        <div className="relative z-10 flex flex-col justify-center px-12 text-white h-full">
+          <h1 className="text-4xl font-bold mb-6 drop-shadow-lg">Welcome to TripTide</h1>
+          <p className="text-xl mb-8 drop-shadow-lg">Your journey to perfect travel planning starts here.</p>
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -93,7 +97,7 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span>Plan your perfect itinerary</span>
+              <span className="drop-shadow-lg">Plan your perfect itinerary</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -101,7 +105,7 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span>Organize activities and schedules</span>
+              <span className="drop-shadow-lg">Organize activities and schedules</span>
             </div>
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -109,7 +113,7 @@ export default function LoginPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span>Create memorable travel experiences</span>
+              <span className="drop-shadow-lg">Create memorable travel experiences</span>
             </div>
           </div>
         </div>
