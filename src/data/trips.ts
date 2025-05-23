@@ -3,7 +3,7 @@ export type Trip = {
   title: string;
   startDate: string;
   endDate: string;
-  image: string;
+  image_url: string;
   days: {
     id: string;
     day: string;
@@ -26,7 +26,7 @@ export const trips: Trip[] = [
     title: 'Tokyo Adventure',
     startDate: '2025-05-18',
     endDate: '2025-05-25',
-    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -316,7 +316,7 @@ export const trips: Trip[] = [
     title: 'Paris Getaway',
     startDate: '2025-06-10',
     endDate: '2025-06-10',
-    image: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -356,7 +356,7 @@ export const trips: Trip[] = [
     title: 'Bali Retreat',
     startDate: '2025-07-01',
     endDate: '2025-07-01',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -396,7 +396,7 @@ export const trips: Trip[] = [
     title: 'New York City Break',
     startDate: '2025-08-15',
     endDate: '2025-08-15',
-    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -436,7 +436,7 @@ export const trips: Trip[] = [
     title: 'Sydney Adventure',
     startDate: '2025-09-01',
     endDate: '2025-09-01',
-    image: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -477,7 +477,7 @@ export const trips: Trip[] = [
     title: 'London Christmas',
     startDate: '2024-12-20',
     endDate: '2024-12-20',
-    image: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -517,7 +517,7 @@ export const trips: Trip[] = [
     title: 'Rome History Tour',
     startDate: '2025-02-01',
     endDate: '2025-02-01',
-    image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -557,7 +557,7 @@ export const trips: Trip[] = [
     title: 'Barcelona Beach Holiday',
     startDate: '2025-03-15',
     endDate: '2025-03-15',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -597,7 +597,7 @@ export const trips: Trip[] = [
     title: 'Amsterdam Weekend',
     startDate: '2025-04-05',
     endDate: '2025-04-05',
-    image: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -637,7 +637,7 @@ export const trips: Trip[] = [
     title: 'Dubai Luxury Stay',
     startDate: '2025-01-10',
     endDate: '2025-01-10',
-    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1000',
     days: [
       {
         id: 'day-1',
@@ -677,7 +677,7 @@ export const trips: Trip[] = [
     title: 'Singapore Food Tour',
     startDate: '2024-11-01',
     endDate: '2024-11-01',
-    image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=1000',
+    image_url: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?q=80&w=1000',
     days: [
       {
         id: 'day-1',

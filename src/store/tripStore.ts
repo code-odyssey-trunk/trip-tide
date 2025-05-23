@@ -4,12 +4,16 @@ import { Trip } from '@/data/trips';
 import { v4 as uuidv4 } from 'uuid';
 import { ItineraryItem } from '@/data/itineraryDays';
 import { generateDaysFromDateRange } from '@/utils/dateUtils';
+import { createClient } from '@/utils/supabase/client';
 
 interface TripState {
   trips: Trip[];
-  addTrip: (tripData: Omit<Trip, 'id'> | Omit<Trip, 'id' | 'days'>) => void;
-  updateTrip: (id: string, tripData: Omit<Trip, 'id' | 'days'>) => void;
-  deleteTrip: (id: string) => void;
+  loading: boolean;
+  error: Error | null;
+  fetchTrips: () => Promise<void>;
+  addTrip: (tripData: Omit<Trip, 'id'> | Omit<Trip, 'id' | 'days'>) => Promise<void>;
+  updateTrip: (id: string, tripData: Omit<Trip, 'id' | 'days'>) => Promise<void>;
+  deleteTrip: (id: string) => Promise<void>;
   addDay: (tripId: string, day: Trip['days'][0]) => void;
   updateDay: (tripId: string, dayId: string, dayData: Partial<Trip['days'][0]>) => void;
   deleteDay: (tripId: string, dayId: string) => void;
@@ -20,75 +24,164 @@ interface TripState {
   moveItemBetweenDays: (tripId: string, sourceDayId: string, destDayId: string, itemId: string, newIndex: number) => void;
 }
 
+const supabase = createClient();
+
 export const useTripStore = create<TripState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       trips: [],
-      
-      addTrip: (tripData) => set((state) => {
-        const newTrip: Trip = {
-          ...tripData,
-          id: 'id' in tripData ? tripData.id as string : uuidv4(),
-          days: 'days' in tripData ? tripData.days : generateDaysFromDateRange(tripData.startDate, tripData.endDate)
-        };
-        
-        // If tripData has an id, check if it exists
-        if ('id' in tripData) {
-          const exists = state.trips.some(trip => trip.id === tripData.id);
-          if (exists) return state;
+      loading: false,
+      error: null,
+
+      fetchTrips: async () => {
+        set({ loading: true, error: null });
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('No user found');
+
+          const { data, error } = await supabase
+            .from('trips')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('start_date', { ascending: true });
+
+          if (error) throw error;
+
+          // Transform the data to match our Trip type
+          const transformedTrips = data.map(trip => ({
+            ...trip,
+            startDate: trip.start_date,
+            endDate: trip.end_date,
+            days: trip.days || generateDaysFromDateRange(trip.start_date, trip.end_date)
+          }));
+
+          set({ trips: transformedTrips, loading: false });
+        } catch (error) {
+          set({ error: error as Error, loading: false });
         }
-        
-        return {
-          trips: [...state.trips, newTrip]
-        };
-      }),
+      },
 
-      updateTrip: (id, tripData) => set((state) => {
-        const trip = state.trips.find(t => t.id === id);
-        if (!trip) return state;
+      addTrip: async (tripData) => {
+        console.log('Adding trip:');
+        set({ loading: true, error: null });
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('No user found');
 
-        // If dates are being updated, regenerate days
-        if (tripData.startDate || tripData.endDate) {
-          const newStartDate = tripData.startDate || trip.startDate;
-          const newEndDate = tripData.endDate || trip.endDate;
-          const allDays = generateDaysFromDateRange(newStartDate, newEndDate);
-          
-          // Preserve existing items for days that still exist
-          const mergedDays = allDays.map(generatedDay => {
-            const existingDay = trip.days.find(d => d.date === generatedDay.date);
-            if (existingDay) {
-              return {
-                ...existingDay,
-                id: generatedDay.id
-              };
-            }
-            return generatedDay;
-          });
+          const newTrip = {
+            ...tripData,
+            id: ('id' in tripData ? tripData.id : uuidv4()) as string,
+            user_id: user.id,
+            start_date: tripData.startDate,
+            end_date: tripData.endDate,
+            days: 'days' in tripData ? tripData.days : generateDaysFromDateRange(tripData.startDate, tripData.endDate)
+          };
 
-          return {
+          const { error } = await supabase
+            .from('trips')
+            .insert([{
+              id: newTrip.id,
+              user_id: newTrip.user_id,
+              title: newTrip.title,
+              start_date: newTrip.start_date,
+              end_date: newTrip.end_date,
+              image_url: newTrip.image_url,
+              days: newTrip.days
+            }]);
+
+          if (error) throw error;
+
+          set((state) => ({
+            trips: [...state.trips, newTrip],
+            loading: false
+          }));
+        } catch (error) {
+          set({ error: error as Error, loading: false });
+        }
+      },
+
+      updateTrip: async (id, tripData) => {
+        set({ loading: true, error: null });
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('No user found');
+
+          const trip = get().trips.find(t => t.id === id);
+          if (!trip) throw new Error('Trip not found');
+
+          // If dates are being updated, regenerate days
+          let days = trip.days;
+          if (tripData.startDate || tripData.endDate) {
+            const newStartDate = tripData.startDate || trip.startDate;
+            const newEndDate = tripData.endDate || trip.endDate;
+            const allDays = generateDaysFromDateRange(newStartDate, newEndDate);
+            
+            // Preserve existing items for days that still exist
+            days = allDays.map(generatedDay => {
+              const existingDay = trip.days.find(d => d.date === generatedDay.date);
+              if (existingDay) {
+                return {
+                  ...existingDay,
+                  id: generatedDay.id
+                };
+              }
+              return generatedDay;
+            });
+          }
+
+          const { error } = await supabase
+            .from('trips')
+            .update({
+              title: tripData.title,
+              start_date: tripData.startDate,
+              end_date: tripData.endDate,
+              image_url: tripData.image_url,
+              days: days
+            })
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+
+          set((state) => ({
             trips: state.trips.map(trip => 
               trip.id === id 
                 ? { 
                     ...trip, 
                     ...tripData,
-                    days: mergedDays
+                    days
                   }
                 : trip
-            )
-          };
+            ),
+            loading: false
+          }));
+        } catch (error) {
+          set({ error: error as Error, loading: false });
         }
+      },
 
-        // If dates aren't being updated, just update other fields
-        return {
-          trips: state.trips.map(trip => 
-            trip.id === id ? { ...trip, ...tripData } : trip
-          )
-        };
-      }),
+      deleteTrip: async (id) => {
+        set({ loading: true, error: null });
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error('No user found');
 
-      deleteTrip: (id) => set((state) => ({
-        trips: state.trips.filter(trip => trip.id !== id)
-      })),
+          const { error } = await supabase
+            .from('trips')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+          if (error) throw error;
+
+          set((state) => ({
+            trips: state.trips.filter(trip => trip.id !== id),
+            loading: false
+          }));
+        } catch (error) {
+          set({ error: error as Error, loading: false });
+        }
+      },
 
       addDay: (tripId, day) => set((state) => ({
         trips: state.trips.map(trip => 

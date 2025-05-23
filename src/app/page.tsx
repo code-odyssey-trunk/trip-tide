@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { trips as staticTrips } from '@/data/trips';
 import TripFormModal from '@/components/TripFormModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
 import { useTripStore } from '@/store/tripStore';
@@ -12,7 +11,7 @@ import { formatDate, getTripState } from '@/utils/dateUtils';
 import { logout } from './login/action';
 
 export default function Home() {
-  const { trips, addTrip, updateTrip, deleteTrip } = useTripStore();
+  const { trips, addTrip, updateTrip, deleteTrip, fetchTrips, loading: tripsLoading } = useTripStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<typeof trips[0] | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
@@ -33,17 +32,9 @@ export default function Home() {
 
   useEffect(() => {
     if (!isHydrated) return;
-    
-    // Only initialize with static trips on first load
-    const hasInitialized = localStorage.getItem('hasInitializedTrips');
-    if (!hasInitialized) {
-      staticTrips.forEach((trip) => {
-        addTrip(trip);
-      });
-      localStorage.setItem('hasInitializedTrips', 'true');
-    }
+    fetchTrips();
     setIsLoading(false);
-  }, [isHydrated, addTrip]);
+  }, [isHydrated, fetchTrips]);
 
   const handleSubmitTrip = (tripData: Omit<typeof trips[0], 'id' | 'days'>) => {
     if (editingTrip) {
@@ -187,7 +178,7 @@ export default function Home() {
                         <Link href={`/trips/${trip.id}`} className="block">
                           <div className="relative h-48 rounded-2xl overflow-hidden">
                             <Image
-                              src={trip.image || '/place/default.jpg'}
+                              src={trip.image_url || '/place/default.jpg'}
                               alt={trip.title}
                               fill
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -261,7 +252,7 @@ export default function Home() {
                         <Link href={`/trips/${trip.id}`} className="block">
                           <div className="relative h-48 rounded-2xl overflow-hidden">
                             <Image
-                              src={trip.image || '/place/default.jpg'}
+                              src={trip.image_url || '/place/default.jpg'}
                               alt={trip.title}
                               fill
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

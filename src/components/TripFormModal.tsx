@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Trip } from '@/data/trips';
 import Image from 'next/image';
+import { uploadTripImage } from '@/utils/imageUpload';
 
 type TripFormModalProps = {
   isOpen: boolean;
@@ -22,9 +23,10 @@ export default function TripFormModal({
     title: '',
     startDate: '',
     endDate: '',
-    image: ''
+    image_url: ''
   });
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [isImageUploading, setIsImageUploading] = useState<boolean>(false);
   const [showDateWarning, setShowDateWarning] = useState(false);
   const [dateError, setDateError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,9 +37,9 @@ export default function TripFormModal({
         title: initialData.title,
         startDate: initialData.startDate,
         endDate: initialData.endDate,
-        image: initialData.image
+        image_url: initialData.image_url
       });
-      setImagePreview(initialData.image);
+      setImagePreview(initialData.image_url);
     } else {
       // Set default dates for new trips
       const today = new Date();
@@ -48,7 +50,7 @@ export default function TripFormModal({
         title: '',
         startDate: today.toISOString().split('T')[0],
         endDate: tomorrow.toISOString().split('T')[0],
-        image: ''
+        image_url: ''
       });
       setImagePreview('');
     }
@@ -107,23 +109,24 @@ export default function TripFormModal({
     setFormData(newFormData);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsImageUploading(true);
     const file = e.target.files?.[0];
-    if (file) {
-      // Create a preview URL for the selected image
+    if (!file) return;
+
+    try {
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
       
-      // Convert the file to base64 for storage
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
-          ...prev,
-          image: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
+      const imageUrl = await uploadTripImage(file);
+      setFormData(prev => ({
+        ...prev,
+        image_url: imageUrl
+      }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
     }
+    setIsImageUploading(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -248,9 +251,17 @@ export default function TripFormModal({
             </label>
             <div 
               className="relative h-48 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-500 transition-colors cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => isImageUploading ? null : fileInputRef.current?.click()}
             >
-              {imagePreview ? (
+              {isImageUploading ? (
+                <div className="h-full flex flex-col items-center justify-center text-orange-500">
+                  <div className="relative w-12 h-12 mb-2">
+                    <div className="absolute inset-0 border-4 border-orange-200 rounded-full"></div>
+                    <div className="absolute inset-0 border-4 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
+                  </div>
+                  {/* <span className="text-sm font-medium text-orange-500">Uploading image...</span> */}
+                </div>
+              ) : imagePreview ? (
                 <div className="relative w-full h-full">
                   <Image
                     src={imagePreview}
