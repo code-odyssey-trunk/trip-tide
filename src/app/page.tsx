@@ -18,10 +18,12 @@ export default function Home() {
     isOpen: boolean;
     tripId: string;
     tripTitle: string;
+    tripImageUrl: string;
   }>({
     isOpen: false,
     tripId: '',
-    tripTitle: ''
+    tripTitle: '',
+    tripImageUrl: ''
   });
   const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -224,7 +226,8 @@ export default function Home() {
                               setDeleteConfirmation({
                                 isOpen: true,
                                 tripId: trip.id,
-                                tripTitle: trip.title
+                                tripTitle: trip.title,
+                                tripImageUrl: trip.image_url || ''
                               });
                             }}
                             className="p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
@@ -298,7 +301,8 @@ export default function Home() {
                               setDeleteConfirmation({
                                 isOpen: true,
                                 tripId: trip.id,
-                                tripTitle: trip.title
+                                tripTitle: trip.title,
+                                tripImageUrl: trip.image_url || ''
                               });
                             }}
                             className="p-2 bg-white/90 rounded-full hover:bg-white shadow-sm"
@@ -345,14 +349,14 @@ export default function Home() {
           setEditingTrip(null);
         }}
         onSubmit={handleSubmitTrip}
-        onDelete={editingTrip ? () => deleteTrip(editingTrip.id) : undefined}
+        onDelete={editingTrip ? () => deleteTrip(editingTrip.id, editingTrip.image_url) : undefined}
         initialData={editingTrip || undefined}
       />
 
       <ConfirmationModal
         isOpen={deleteConfirmation.isOpen}
         onClose={() => setDeleteConfirmation(prev => ({ ...prev, isOpen: false }))}
-        onConfirm={() => deleteTrip(deleteConfirmation.tripId)}
+        onConfirm={() => deleteTrip(deleteConfirmation.tripId, deleteConfirmation.tripImageUrl)}
         title="Delete Trip"
         message={`Are you sure you want to delete "${deleteConfirmation.tripTitle}"? This action cannot be undone.`}
       />

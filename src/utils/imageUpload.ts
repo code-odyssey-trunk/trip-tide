@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 
-export async function uploadTripImage(file: File): Promise<string> {
+export async function uploadTripImage(file: File, imageUrl: string): Promise<string> {
   const supabase = createClient();
   
   // Generate a unique file name
@@ -17,6 +17,10 @@ export async function uploadTripImage(file: File): Promise<string> {
     throw uploadError;
   }
 
+  if (imageUrl) {
+    await deleteTripImage(imageUrl);
+  }
+
   // Get the public URL
   const { data: { publicUrl } } = supabase.storage
     .from('trips')
@@ -24,3 +28,28 @@ export async function uploadTripImage(file: File): Promise<string> {
 
   return publicUrl;
 } 
+
+export async function deleteTripImage(imageUrl: string): Promise<void> {
+  const supabase = createClient();
+  try {
+    // Extract just the filename from the URL
+    const fileName = imageUrl.split('/').pop();
+    if (!fileName) {
+      throw new Error('Invalid image URL: Could not extract filename');
+    }
+    // Construct the full path
+    const filePath = `trip-images/${fileName}`;
+    // Delete the file
+    const { error: deleteError } = await supabase
+      .storage
+      .from('trips')
+      .remove([filePath]);
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+  } catch (error) {
+    throw error;
+  }
+}

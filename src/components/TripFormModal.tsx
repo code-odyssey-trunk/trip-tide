@@ -118,7 +118,7 @@ export default function TripFormModal({
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
       
-      const imageUrl = await uploadTripImage(file);
+      const imageUrl = await uploadTripImage(file, formData.image_url);
       setFormData(prev => ({
         ...prev,
         image_url: imageUrl

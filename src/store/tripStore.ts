@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ItineraryItem } from '@/data/itineraryDays';
 import { generateDaysFromDateRange } from '@/utils/dateUtils';
 import { createClient } from '@/utils/supabase/client';
+import { deleteTripImage } from '@/utils/imageUpload';
 
 interface TripState {
   trips: Trip[];
@@ -13,7 +14,7 @@ interface TripState {
   fetchTrips: () => Promise<void>;
   addTrip: (tripData: Omit<Trip, 'id'> | Omit<Trip, 'id' | 'days'>) => Promise<void>;
   updateTrip: (id: string, tripData: Omit<Trip, 'id' | 'days'>) => Promise<void>;
-  deleteTrip: (id: string) => Promise<void>;
+  deleteTrip: (id: string, imageUrl: string) => Promise<void>;
   addDay: (tripId: string, day: Trip['days'][0]) => void;
   updateDay: (tripId: string, dayId: string, dayData: Partial<Trip['days'][0]>) => void;
   deleteDay: (tripId: string, dayId: string) => void;
@@ -74,6 +75,7 @@ export const useTripStore = create<TripState>()(
             user_id: user.id,
             start_date: tripData.startDate,
             end_date: tripData.endDate,
+            image_url: tripData.image_url,
             days: 'days' in tripData ? tripData.days : generateDaysFromDateRange(tripData.startDate, tripData.endDate)
           };
 
@@ -160,12 +162,13 @@ export const useTripStore = create<TripState>()(
         }
       },
 
-      deleteTrip: async (id) => {
+      deleteTrip: async (id, imageUrl) => {
+        console.log('imageUrl:', imageUrl);
         set({ loading: true, error: null });
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) throw new Error('No user found');
-
+          console.log('Deleting trip:', id);
           const { error } = await supabase
             .from('trips')
             .delete()
@@ -173,6 +176,14 @@ export const useTripStore = create<TripState>()(
             .eq('user_id', user.id);
 
           if (error) throw error;
+          console.log('Deleting trip image:', imageUrl);
+          if (imageUrl) { 
+            console.log('Deleting trip image: delete ', imageUrl);
+            await deleteTripImage(imageUrl);
+            console.log('Trip image deleted');
+          } else {
+            console.log('No image to delete');
+          }
 
           set((state) => ({
             trips: state.trips.filter(trip => trip.id !== id),
